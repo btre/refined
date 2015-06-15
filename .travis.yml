@@ -10,9 +10,9 @@ before_install:
  - sudo apt-get install -y graphviz
 script:
  - sbt ++$TRAVIS_SCALA_VERSION validate
-after_success:
- - sbt ++$TRAVIS_SCALA_VERSION coveralls
- - bash <(curl -s https://codecov.io/bash)
+#after_success:
+# - sbt ++$TRAVIS_SCALA_VERSION coveralls
+# - bash <(curl -s https://codecov.io/bash)
 notifications:
   webhooks:
     urls:

@@ -76,7 +76,7 @@ lazy val compileSettings = Seq(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     "com.chuusai" %%% "shapeless" % "2.2.2",
-    "org.scalacheck" %% "scalacheck" % "1.12.3" % "test"
+    "org.scalacheck" %%% "scalacheck" % "1.12.3" % "test"
   ),
 
   wartremoverErrors in (Compile, compile) ++= Warts.unsafe diff
@@ -161,4 +161,4 @@ lazy val miscSettings = Seq(
 lazy val styleSettings =
   scalariformSettings
 
-addCommandAlias("validate", ";clean;coverage;test;scalastyle;test:scalastyle;doc;tutCopy")
+addCommandAlias("validate", ";clean;test;scalastyle;test:scalastyle;doc;tutCopy")
