@@ -24,6 +24,8 @@ trait Predicate[P, T] extends Serializable { self =>
   def validate(t: T): Option[String] =
     if (isValid(t)) None else Some(s"Predicate failed: ${show(t)}.")
 
+  val isConstant: Boolean = false
+
   /**
    * Returns `t` tagged with the predicate `P` on the right if it satisfies
    * it, or an error message on the left otherwise.
@@ -57,6 +59,7 @@ trait Predicate[P, T] extends Serializable { self =>
       def isValid(u: U): Boolean = self.isValid(f(u))
       def show(u: U): String = self.show(f(u))
       override def validate(u: U): Option[String] = self.validate(f(u))
+      override val isConstant: Boolean = self.isConstant
       override def accumulateIsValid(u: U): List[Boolean] = self.accumulateIsValid(f(u))
       override def accumulateShow(u: U): List[String] = self.accumulateShow(f(u))
     }
@@ -71,6 +74,13 @@ object Predicate {
     new Predicate[P, T] {
       def isValid(t: T): Boolean = validateT(t)
       def show(t: T): String = showT(t)
+    }
+
+  def constant[P, T](isValidV: Boolean, showV: String): Predicate[P, T] =
+    new Predicate[P, T] {
+      def isValid(t: T): Boolean = isValidV
+      def show(t: T): String = showV
+      override val isConstant: Boolean = true
     }
 
   /**
@@ -91,9 +101,9 @@ object Predicate {
 
   /** Returns a [[Predicate]] that ignores its inputs and always yields `true`. */
   def alwaysValid[P, T]: Predicate[P, T] =
-    instance(_ => true, _ => "true")
+    constant(isValidV = true, "true")
 
   /** Returns a [[Predicate]] that ignores its inputs and always yields `false`. */
   def alwaysInvalid[P, T]: Predicate[P, T] =
-    instance(_ => false, _ => "false")
+    constant(isValidV = false, "false")
 }

@@ -52,6 +52,8 @@ private[refined] trait BooleanPredicates {
           case Some(_) => None
           case None => Some(s"Predicate ${p.show(t)} did not fail.")
         }
+
+      override val isConstant: Boolean = p.isConstant
     }
 
   implicit def andPredicate[A, B, T](implicit pa: Predicate[A, T], pb: Predicate[B, T]): Predicate[A And B, T] =
