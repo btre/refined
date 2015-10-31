@@ -1,10 +1,15 @@
 package eu.timepit.refined
 
+import eu.timepit.refined.StringPredicateSpec.SimplifiedJsonParser._
 import eu.timepit.refined.TestUtils._
 import eu.timepit.refined.string._
 import org.scalacheck.Prop._
+import org.scalacheck.Prop._
 import org.scalacheck.Properties
 import shapeless.Witness
+
+import scala.util.parsing.combinator.JavaTokenParsers
+import scala.util.parsing.combinator.Parsers.Parser
 
 class StringValidateSpec extends Properties("StringValidate") {
 
@@ -68,5 +73,36 @@ class StringValidateSpec extends Properties("StringValidate") {
 
   property("Uuid.showResult.Failed") = secure {
     showResult[Uuid]("whops") ?= "Uuid predicate failed: Invalid UUID string: whops"
+  }
+
+  implicit object SimplifiedJsonParser extends JavaTokenParsers {
+    def value: Parser[_] = obj |
+      floatingPointNumber |
+      boolean
+
+    def boolean = "true" | "false"
+
+    def obj = "{" ~ repsep(attribute, ",") ~ "}"
+
+    def attribute = stringLiteral ~ ":" ~ value
+
+  }
+
+  property("RegexParser success") = secure {
+    val simplifiedJson =
+      """{
+          "b": true,
+          "f": 1.09
+        }"""
+
+    isValid[SimplifiedJsonParser.Parser[_], (String, SimplifiedJsonParser.Parser[_])](
+      (simplifiedJson, SimplifiedJsonParser.obj)
+    )
+  }
+
+  property("RegexParser no success") = secure {
+    showResult[SimplifiedJsonParser.Parser[_], (String, SimplifiedJsonParser.Parser[_])](
+      ("nonesense", SimplifiedJsonParser.obj)
+    ) ?= "RegexParser predicate failed: `{' expected but `n' found"
   }
 }

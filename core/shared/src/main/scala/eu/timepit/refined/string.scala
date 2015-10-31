@@ -5,6 +5,8 @@ import eu.timepit.refined.api.{ Inference, Validate }
 import eu.timepit.refined.string._
 import shapeless.Witness
 
+import scala.util.parsing.combinator.RegexParsers
+
 /**
  * Module for `String` related predicates. Note that most of the predicates
  * in `[[collection]]` also work for `String`s by treating them as sequences
@@ -68,6 +70,15 @@ private[refined] trait StringValidate {
 
   implicit def xpathValidate: Validate.Plain[String, XPath] =
     Validate.fromPartial(javax.xml.xpath.XPathFactory.newInstance().newXPath().compile, "XPath", XPath())
+
+  implicit def parserPredicate[T <: RegexParsers](implicit parsers: T): Validate.Plain[parsers.Parser[_], (String, parsers.Parser[_])] =
+    Validate.fromPartial(
+      (in: (String, parsers.Parser[_])) => parsers.parse(in._2, in._1) match {
+        case parsers.Success(_, _) => in
+        case parsers.NoSuccess(msg, _) => throw new RuntimeException(msg)
+      },
+      "RegexParser"
+    )
 }
 
 private[refined] trait StringInference {
