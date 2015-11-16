@@ -40,6 +40,9 @@ object string extends StringValidate with StringInference {
 
   /** Predicate that checks if a `String` is a valid XPath expression. */
   case class XPath()
+
+  /** Predicate that checks if a `String` from `(String, Parser)` can be parsed by `Parser` **/
+  case class RegexParser()
 }
 
 private[refined] trait StringValidate {
@@ -71,13 +74,13 @@ private[refined] trait StringValidate {
   implicit def xpathValidate: Validate.Plain[String, XPath] =
     Validate.fromPartial(javax.xml.xpath.XPathFactory.newInstance().newXPath().compile, "XPath", XPath())
 
-  implicit def parserPredicate[T <: RegexParsers](implicit parsers: T): Validate.Plain[parsers.Parser[_], (String, parsers.Parser[_])] =
+  implicit def parserValidate[T <: RegexParsers](implicit parsers: T): Validate.Plain[(String, parsers.Parser[_]), RegexParser] =
     Validate.fromPartial(
       (in: (String, parsers.Parser[_])) => parsers.parse(in._2, in._1) match {
         case parsers.Success(_, _) => in
         case parsers.NoSuccess(msg, _) => throw new RuntimeException(msg)
       },
-      "RegexParser"
+      "RegexParser", RegexParser()
     )
 }
 
